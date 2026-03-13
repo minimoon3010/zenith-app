@@ -5,7 +5,7 @@ spring:
     compose:
       enabled: false
   profiles:
-    active: local
+    active: local # TODO: move active profile to environment variable before deployment
   datasource:
     url: jdbc:postgresql://localhost:${DB_HOST}/${DB_DATABASE}
     username: ${DB_USERNAME}
