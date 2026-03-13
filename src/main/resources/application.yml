@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: zenith-app
+  docker:
+    compose:
+      enabled: false
+  profiles:
+    active: local # TODO: move active profile to environment variable before deployment
+  datasource:
+    url: jdbc:postgresql://localhost:${DB_HOST}/${DB_DATABASE}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
