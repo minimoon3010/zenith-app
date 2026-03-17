@@ -1,6 +1,7 @@
 package com.zenith.zenith_app.user;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
 
@@ -10,13 +11,15 @@ public class UserService {
 
     private final UserRepository userRepository;
 
+    private final PasswordEncoder passwordEncoder;
+
     public UserDTO register(RegisterRequest registerRequest){
         User user = User.builder()
                 .firstName(registerRequest.firstName())
                 .username(registerRequest.username())
                 .email(registerRequest.email())
                 .birthday(registerRequest.birthday())
-                .password(registerRequest.password()) // TODO: hash password with BCrypt before saving - Z-3 Security
+                .password(passwordEncoder.encode(registerRequest.password()))
                 .build();
 
         return UserDTO.fromUser(userRepository.save(user));
