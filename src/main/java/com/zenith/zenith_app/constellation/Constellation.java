@@ -1,5 +1,6 @@
 package com.zenith.zenith_app.constellation;
 
+import com.zenith.zenith_app.star.Star;
 import com.zenith.zenith_app.user.User;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -7,6 +8,8 @@ import lombok.Setter;
 import lombok.Builder;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Entity
 @Table(name = "z_constellation")
@@ -29,7 +32,7 @@ public class Constellation {
 
     private String objective;
 
-//    @OneToMany(mappedBy = "constellation")
-//    private List<Star> stars;
+    @OneToMany(mappedBy = "constellation")
+    private List<Star> stars;
 
 }

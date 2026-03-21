@@ -18,28 +18,28 @@ public class ConstellationController {
         return constellationService.createConstellation(constellationRequest, userDetails.getUsername());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/view/id/{id}")
     public ConstellationDTO viewConstellationById(@PathVariable Long id){
         return constellationService.viewConstellationById(id);
     }
 
-    @GetMapping
-    public ConstellationDTO viewConstellationByName(@RequestParam String missionName){
+    @GetMapping("/view/name/{missionName}")
+    public ConstellationDTO viewConstellationByName(@PathVariable String missionName){
         return constellationService.viewConstellationByName(missionName);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/update/{id}")
     public ConstellationDTO updateConstellation(@RequestBody UpdateConstellationRequest updateConstellationRequest, @PathVariable Long id){
         return constellationService.updateConstellation(updateConstellationRequest, id);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/id/{id}")
     public void deleteConstellationById(@PathVariable Long id){
         constellationService.deleteConstellationById(id);
     }
 
-    @DeleteMapping
-    public void deleteConstellationByName(@RequestParam String missionName){
+    @DeleteMapping("/delete/name/{missionName}")
+    public void deleteConstellationByName(@PathVariable String missionName){
         constellationService.deleteConstellationByName(missionName);
     }
 

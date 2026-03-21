@@ -35,6 +35,7 @@ public class ConstellationService {
         Optional<Constellation> optionalConstellation = constellationRepository.findByMissionName(missionName);
         return optionalConstellation.map(ConstellationDTO::fromConstellation)
                 .orElseThrow(() -> new RuntimeException("Constellation does not exist."));
+        // TODO: should return List<ConstellationDTO> - see defect issue
     }
 
     public ConstellationDTO updateConstellation(UpdateConstellationRequest request, Long id){
