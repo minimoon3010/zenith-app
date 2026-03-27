@@ -4,7 +4,9 @@ import com.zenith.zenith_app.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -46,6 +48,13 @@ public class ConstellationService {
         constellation.setObjective(request.objective());
 
         return ConstellationDTO.fromConstellation(constellationRepository.save(constellation));
+    }
+
+    public List<ConstellationDTO> viewAllConstellations(String username){
+        return constellationRepository.findByUser_Username(username)
+                .stream()
+                .map(ConstellationDTO::fromConstellation)
+                .collect(Collectors.toList());
     }
 
     public void deleteConstellationById(Long id){

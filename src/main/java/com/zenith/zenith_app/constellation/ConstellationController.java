@@ -5,6 +5,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/constellation")
 @RequiredArgsConstructor
@@ -26,6 +28,11 @@ public class ConstellationController {
     @GetMapping("/view/name/{missionName}")
     public ConstellationDTO viewConstellationByName(@PathVariable String missionName){
         return constellationService.viewConstellationByName(missionName);
+    }
+
+    @GetMapping("/view/all")
+    public List<ConstellationDTO> viewAllConstellations(@AuthenticationPrincipal UserDetails userDetails){
+        return constellationService.viewAllConstellations(userDetails.getUsername());
     }
 
     @PutMapping("/update/{id}")
