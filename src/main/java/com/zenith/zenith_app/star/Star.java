@@ -25,6 +25,7 @@ public class Star {
 
     private String description;
 
+    @Enumerated(EnumType.STRING)
     private StarStatus status;
 
     private int xp;
