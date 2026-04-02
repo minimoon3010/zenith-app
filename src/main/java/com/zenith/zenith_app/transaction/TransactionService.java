@@ -186,7 +186,7 @@ public class TransactionService {
                 .orElseThrow(() -> new RuntimeException("Transaction does not exist."));
 
         if (!transaction.getUser().getUsername().equals(username)) {
-            throw new RuntimeException("Unauthorized access!");
+            throw new RuntimeException("Unauthorised access!");
         }
         return transaction;
     }
