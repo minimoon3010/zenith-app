@@ -47,27 +47,27 @@ public class TransactionController {
         return transactionService.viewTransactionByName(transactionName, userDetails.getUsername());
     }
 
-    @GetMapping("/view/filter/amount")
+    @GetMapping("/filter/amount")
     public List<TransactionDTO> filterTransactionByAmount(@RequestParam BigDecimal lower,
                                                           @RequestParam BigDecimal higher,
                                                           @AuthenticationPrincipal UserDetails userDetails){
         return transactionService.filterTransactionByAmount(lower, higher, userDetails.getUsername());
     }
 
-    @GetMapping("/view/filter/time")
+    @GetMapping("/filter/time")
     public List<TransactionDTO> filterTransactionByCreatedBetween(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime earlier,
                                                                   @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime later,
                                                                   @AuthenticationPrincipal UserDetails userDetails){
         return transactionService.filterTransactionByCreatedBetween(earlier, later, userDetails.getUsername());
     }
 
-    @GetMapping("/view/filter/type/{type}")
+    @GetMapping("/filter/type/{type}")
     public List<TransactionDTO> filterTransactionByType(@PathVariable TransactionType type,
                                                         @AuthenticationPrincipal UserDetails userDetails){
         return transactionService.filterTransactionByType(type, userDetails.getUsername());
     }
 
-    @GetMapping("/view/filter/category/{category}")
+    @GetMapping("/filter/category/{category}")
     public List<TransactionDTO> filterTransactionByCategory(@PathVariable TransactionCategory category,
                                                         @AuthenticationPrincipal UserDetails userDetails){
         return transactionService.filterTransactionByCategory(category, userDetails.getUsername());
