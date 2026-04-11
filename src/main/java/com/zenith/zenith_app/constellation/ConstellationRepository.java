@@ -1,17 +1,13 @@
 package com.zenith.zenith_app.constellation;
 
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface ConstellationRepository extends JpaRepository<Constellation, Long> {
 
-    Optional<Constellation> findByMissionName(String missionName);
+  List<Constellation> findByMissionNameAndUser_Username(String missionName, String username);
 
-    List<Constellation> findByUser_Username(String username);
-
-
+  List<Constellation> findByUser_Username(String username);
 }

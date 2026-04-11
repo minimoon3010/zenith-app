@@ -6,8 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class ZenithAppApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(ZenithAppApplication.class, args);
-	}
-
+  public static void main(String[] args) {
+    SpringApplication.run(ZenithAppApplication.class, args);
+  }
 }

@@ -1,4 +1,3 @@
 package com.zenith.zenith_app.auth;
 
-public record JWTResponse(String token) {
-}
+public record JWTResponse(String token) {}
