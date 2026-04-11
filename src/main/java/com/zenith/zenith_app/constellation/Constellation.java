@@ -3,13 +3,12 @@ package com.zenith.zenith_app.constellation;
 import com.zenith.zenith_app.star.Star;
 import com.zenith.zenith_app.user.User;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.Builder;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "z_constellation")
@@ -20,19 +19,18 @@ import java.util.List;
 @NoArgsConstructor
 public class Constellation {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+  @ManyToOne
+  @JoinColumn(name = "user_id")
+  private User user;
 
-    private String missionName;
+  private String missionName;
 
-    private String objective;
+  private String objective;
 
-    @OneToMany(mappedBy = "constellation")
-    private List<Star> stars;
-
+  @OneToMany(mappedBy = "constellation")
+  private List<Star> stars;
 }

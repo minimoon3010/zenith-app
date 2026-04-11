@@ -19,26 +19,28 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JWTFilter jwtFilter;
+  private final JWTFilter jwtFilter;
 
-    private final UserDetailsService userDetailsService;
+  private final UserDetailsService userDetailsService;
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        return httpSecurity
-                .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/api/users/register", "/api/auth/login").permitAll()
-                                .anyRequest().authenticated())
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                .csrf(AbstractHttpConfigurer::disable)
-                .build();
-    }
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+    return httpSecurity
+        .authorizeHttpRequests(
+            auth ->
+                auth.requestMatchers("/api/users/register", "/api/auth/login")
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated())
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+        .csrf(AbstractHttpConfigurer::disable)
+        .build();
+  }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
+  @Bean
+  public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+  }
 }
