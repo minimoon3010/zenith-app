@@ -1,9 +1,7 @@
 package com.zenith.zenith_app.transaction;
 
-import static com.zenith.zenith_app.config.ZenithConstants.TRANSACTION_DISMISSED_XP;
-import static com.zenith.zenith_app.config.ZenithConstants.TRANSACTION_IMPULSE_XP;
-
 import com.zenith.zenith_app.config.SecureEntity;
+import com.zenith.zenith_app.config.XPService;
 import com.zenith.zenith_app.user.UserRepository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -22,6 +20,8 @@ public class TransactionService {
   private final UserRepository userRepository;
 
   private final SecureEntity secureEntity;
+
+  private final XPService xpService;
 
   public TransactionDTO createTransaction(CreateTransactionRequest request, String username) {
     if (request.transactionType() == TransactionType.DISMISSED) {
@@ -44,7 +44,7 @@ public class TransactionService {
             .build();
 
     if (transaction.getTransactionType() == TransactionType.IMPULSE) {
-      setImpulseXPPenaltyUponCreation(transaction);
+      xpService.setImpulseXPPenaltyUponCreation(transaction);
     }
 
     return TransactionDTO.fromTransaction(transactionRepository.save(transaction));
@@ -75,9 +75,9 @@ public class TransactionService {
     transaction.setTransactionType(request.transactionType());
 
     if (transaction.getTransactionType() == TransactionType.DISMISSED) {
-      setDismissalXPBonus(transaction);
+      xpService.setDismissalXPBonus(transaction);
     } else if (transaction.getTransactionType() == TransactionType.IMPULSE) {
-      setImpulseXPPenaltyUponUpdating(transaction);
+      xpService.setImpulseXPPenaltyUponUpdating(transaction);
     }
 
     return TransactionDTO.fromTransaction(transactionRepository.save(transaction));
@@ -150,43 +150,6 @@ public class TransactionService {
       throw new RuntimeException("Transaction with this name does not exist.");
     } else {
       transactions.forEach(this::deletingPotentialTransactionOnly);
-    }
-  }
-
-  private void setDismissalXPBonus(Transaction transaction) {
-    if (!transaction.isXpAwarded()) {
-      int userXP = transaction.getUser().getXp();
-
-      // Adding 30XP as a reward
-      transaction.getUser().setXp(userXP + TRANSACTION_DISMISSED_XP);
-
-      transaction.setXpAwarded(true);
-      userRepository.save(transaction.getUser());
-    }
-  }
-
-  private void setImpulseXPPenaltyUponUpdating(Transaction transaction) {
-    if (!transaction.isXpAwarded()) {
-      int userXP = transaction.getUser().getXp();
-
-      // So that XP does not go below 0 when deducting 40XP
-      transaction.getUser().setXp(Math.max(0, userXP - TRANSACTION_IMPULSE_XP));
-
-      transaction.setXpAwarded(true);
-      userRepository.save(transaction.getUser());
-    }
-  }
-
-  private void setImpulseXPPenaltyUponCreation(Transaction transaction) {
-    if (!transaction.isXpAwarded()) {
-      int userXP = transaction.getUser().getXp();
-
-      // So that XP does not go below 0 when deducting 20XP.
-      // 20 instead of 40 because they were being honest :)
-      transaction.getUser().setXp(Math.max(0, userXP - (TRANSACTION_IMPULSE_XP - 20)));
-
-      transaction.setXpAwarded(true);
-      userRepository.save(transaction.getUser());
     }
   }
 

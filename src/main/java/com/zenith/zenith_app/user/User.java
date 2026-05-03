@@ -39,6 +39,10 @@ public class User implements UserDetails {
 
   private int xp;
 
+  private LocalDate lastActivity; // TODO: To rectify by implementing later
+
+  private LocalDate lastBirthdayReward;
+
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
     return List.of();
