@@ -1,4 +1,5 @@
 application-local.yml
+src/test/resources/application-test.yml
 design.md
 HELP.md
 target/

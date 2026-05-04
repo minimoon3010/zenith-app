@@ -22,7 +22,8 @@ public class AuthService {
     if (passwordEncoder.matches(loginRequest.password(), userFound.getPassword())) {
       return new JWTResponse(jwtUtil.generateToken(userFound.getId()));
     } else {
-      throw new RuntimeException("Passwords do not match.");
+      throw new org.springframework.security.authentication.BadCredentialsException(
+          "Passwords do not match.");
     }
   }
 
@@ -37,6 +38,9 @@ public class AuthService {
     return (email != null
             ? userRepository.findByEmail(email)
             : userRepository.findByUsername(username))
-        .orElseThrow(() -> new RuntimeException("User not found."));
+        .orElseThrow(
+            () ->
+                new org.springframework.security.authentication.BadCredentialsException(
+                    "User not found."));
   }
 }
