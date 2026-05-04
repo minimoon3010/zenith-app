@@ -2,6 +2,7 @@ package com.zenith.zenith_app.user;
 
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,11 @@ public class UserService {
   private final PasswordEncoder passwordEncoder;
 
   public UserDTO register(RegisterRequest registerRequest) {
+
+    if (userRepository.findByUsername(registerRequest.username()).isPresent()) {
+      return UserDTO.fromUser(userRepository.findByUsername(registerRequest.username()).get());
+    }
+
     User user =
         User.builder()
             .firstName(registerRequest.firstName())
@@ -30,14 +36,14 @@ public class UserService {
     Optional<User> optionalUser = userRepository.findById(userId);
     return optionalUser
         .map(UserDTO::fromUser)
-        .orElseThrow(() -> new RuntimeException("User does not exist."));
+        .orElseThrow(() -> new BadCredentialsException("User does not exist."));
   }
 
   public UserDTO updateProfile(Long userId, UpdateProfileRequest updateProfileRequest) {
     User user =
         userRepository
             .findById(userId)
-            .orElseThrow(() -> new RuntimeException("User does not exist."));
+            .orElseThrow(() -> new BadCredentialsException("User does not exist."));
 
     if (updateProfileRequest.firstName() != null) {
       user.setFirstName(updateProfileRequest.firstName());

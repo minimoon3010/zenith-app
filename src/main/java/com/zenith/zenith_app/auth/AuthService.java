@@ -3,6 +3,7 @@ package com.zenith.zenith_app.auth;
 import com.zenith.zenith_app.user.User;
 import com.zenith.zenith_app.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,8 +23,7 @@ public class AuthService {
     if (passwordEncoder.matches(loginRequest.password(), userFound.getPassword())) {
       return new JWTResponse(jwtUtil.generateToken(userFound.getId()));
     } else {
-      throw new org.springframework.security.authentication.BadCredentialsException(
-          "Passwords do not match.");
+      throw new BadCredentialsException("Passwords do not match.");
     }
   }
 
@@ -38,9 +38,6 @@ public class AuthService {
     return (email != null
             ? userRepository.findByEmail(email)
             : userRepository.findByUsername(username))
-        .orElseThrow(
-            () ->
-                new org.springframework.security.authentication.BadCredentialsException(
-                    "User not found."));
+        .orElseThrow(() -> new BadCredentialsException("User not found."));
   }
 }
