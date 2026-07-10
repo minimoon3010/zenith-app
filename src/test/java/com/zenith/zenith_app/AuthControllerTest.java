@@ -31,7 +31,7 @@ public class AuthControllerTest extends ConfigurationSetupTest {
 
   @Test
   void testLogin_HappyPath() throws Exception {
-    String happyPathData = loadJson("login_happyPath.json");
+    String happyPathData = loadJson("user", "login_happyPath.json");
 
     List<Object> happyPaths = objectMapper.readValue(happyPathData, new TypeReference<>() {});
 
@@ -50,7 +50,7 @@ public class AuthControllerTest extends ConfigurationSetupTest {
 
   @Test
   void testLogin_SadPath() throws Exception {
-    String sadPathData = loadJson("login_sadPath.json");
+    String sadPathData = loadJson("user", "login_sadPath.json");
 
     List<Object> sadPaths = objectMapper.readValue(sadPathData, new TypeReference<>() {});
 

@@ -26,7 +26,7 @@ public abstract class ConfigurationSetupTest {
   protected final ObjectMapper objectMapper = new ObjectMapper();
 
   protected Long registerUser() throws Exception {
-    String registerData = loadJson("register.json");
+    String registerData = loadJson("user", "register.json");
 
     String response =
         mockMvc
@@ -42,11 +42,7 @@ public abstract class ConfigurationSetupTest {
   }
 
   protected String extractTokenFromLogin() throws Exception {
-    String loginData =
-        new String(
-            Objects.requireNonNull(
-                    getClass().getClassLoader().getResourceAsStream("data/login_happyPath.json"))
-                .readAllBytes());
+    String loginData = loadJson("user", "login_happyPath.json");
 
     List<Object> logins = objectMapper.readValue(loginData, new TypeReference<>() {});
     String singleLogin = objectMapper.writeValueAsString(logins.get(0));
@@ -65,12 +61,12 @@ public abstract class ConfigurationSetupTest {
     return objectMapper.readTree(response).get("token").asText();
   }
 
-  protected String loadJson(String filename) throws Exception {
+  protected String loadJson(String folder, String filename) throws Exception {
     return new String(
         Objects.requireNonNull(
                 ConfigurationSetupTest.class
                     .getClassLoader()
-                    .getResourceAsStream("data/" + filename))
+                    .getResourceAsStream("data/" + folder + "/" + filename))
             .readAllBytes());
   }
 }

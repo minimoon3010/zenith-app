@@ -53,7 +53,7 @@ public class UserControllerTest extends ConfigurationSetupTest {
 
   @Test
   void testUpdateProfile_HappyPath() throws Exception {
-    String updateProfileData = loadJson("updateProfile.json");
+    String updateProfileData = loadJson("user", "updateProfile.json");
 
     List<Object> updateOptions =
         objectMapper.readValue(updateProfileData, new TypeReference<>() {});
@@ -79,7 +79,7 @@ public class UserControllerTest extends ConfigurationSetupTest {
             put("/api/users/0")
                 .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(("{\"firstName\" : \"Candy\"}")))
+                .content(("{\"firstName\" : \"Sailor\"}")))
 
         // Verify that HTTP 401 is returned
         .andExpect(status().isUnauthorized());
@@ -91,7 +91,7 @@ public class UserControllerTest extends ConfigurationSetupTest {
         .perform(
             put("/api/users/" + id)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(("{\"firstName\" : \"Candy\"}")))
+                .content(("{\"firstName\" : \"Sailor\"}")))
 
         // Verify that HTTP 401 is returned - without a token they cannot be verified.
         .andExpect(status().isUnauthorized());
