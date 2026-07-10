@@ -1,6 +1,7 @@
 package com.zenith.zenith_app.star;
 
 import com.zenith.zenith_app.config.SecureEntity;
+import com.zenith.zenith_app.config.XPService;
 import com.zenith.zenith_app.config.ZenithConstants;
 import com.zenith.zenith_app.constellation.Constellation;
 import com.zenith.zenith_app.user.UserRepository;
@@ -17,6 +18,7 @@ public class StarService {
   private final UserRepository userRepository;
 
   private final SecureEntity secureEntity;
+  private final XPService xpService;
 
   public StarDTO createStar(CreateStarRequest request, Long constellationId, String username) {
     Star star =
@@ -24,7 +26,6 @@ public class StarService {
             .name(request.name())
             .description(request.description())
             .status(StarStatus.NOT_STARTED)
-            .xp(ZenithConstants.STAR_XP)
             .constellation(secureEntity.getSecureConstellation(constellationId, username))
             .user(
                 userRepository
@@ -72,6 +73,10 @@ public class StarService {
 
     if (request.status() != null) {
       star.setStatus(request.status());
+      if (request.status().equals(StarStatus.COMPLETED)) {
+        star.setXp(starXPBasedOnConstellationCount(star.getConstellation().getId(), username));
+        xpService.awardStarXP(star);
+      }
     }
 
     if (request.constellationId() != null) {
@@ -94,6 +99,15 @@ public class StarService {
       starRepository.deleteAll(star);
     } else {
       throw new RuntimeException("Star with this name does not exist.");
+    }
+  }
+
+  private int starXPBasedOnConstellationCount(Long constellationId, String username) {
+    if (getAllStarsByConstellation(constellationId, username).size()
+        >= ZenithConstants.CONSTELLATION_MIN_STARS_FOR_BONUS) {
+      return ZenithConstants.LARGE_CONSTELLATION_STAR_XP;
+    } else {
+      return ZenithConstants.INITIAL_STAR_XP;
     }
   }
 }

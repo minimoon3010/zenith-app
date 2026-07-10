@@ -1,5 +1,6 @@
 package com.zenith.zenith_app.constellation;
 
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,7 +16,7 @@ public class ConstellationController {
 
   @PostMapping("/new")
   public ConstellationDTO createConstellation(
-      @RequestBody CreateConstellationRequest constellationRequest,
+      @Valid @RequestBody CreateConstellationRequest constellationRequest,
       @AuthenticationPrincipal UserDetails userDetails) {
     return constellationService.createConstellation(
         constellationRequest, userDetails.getUsername());

@@ -33,4 +33,8 @@ public class Constellation {
 
   @OneToMany(mappedBy = "constellation")
   private List<Star> stars;
+
+  private boolean isXpAwarded = false;
+
+  private ConstellationStatus status = ConstellationStatus.IN_PROGRESS;
 }

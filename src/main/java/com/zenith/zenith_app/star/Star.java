@@ -38,4 +38,6 @@ public class Star {
   @ManyToOne
   @JoinColumn(name = "user_id")
   private User user;
+
+  private boolean isXpAwarded = false;
 }
