@@ -69,4 +69,30 @@ public abstract class ConfigurationSetupTest {
                     .getResourceAsStream("data/" + folder + "/" + filename))
             .readAllBytes());
   }
+
+  protected String createConstellation() throws Exception {
+    String constellation = loadJson("constellation", "constellation.json");
+    return mockMvc
+        .perform(
+            post("/api/constellation/new")
+                .header("Authorization", "Bearer " + extractTokenFromLogin())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(constellation))
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+  }
+
+  protected String createStar() throws Exception {
+    String star = loadJson("star", "star.json");
+    return mockMvc
+        .perform(
+            post("/api/star/new")
+                .header("Authorization", "Bearer " + extractTokenFromLogin())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(star))
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+  }
 }

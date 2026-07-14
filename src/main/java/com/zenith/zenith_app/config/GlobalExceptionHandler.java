@@ -16,4 +16,8 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(RuntimeException.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   public void handleRuntimeException() {}
+
+  @ExceptionHandler(ResourceNotFoundException.class)
+  @ResponseStatus(HttpStatus.NOT_FOUND)
+  public void handleResourceNotFoundException() {}
 }
