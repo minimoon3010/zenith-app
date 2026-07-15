@@ -6,6 +6,7 @@ import com.zenith.zenith_app.star.Star;
 import com.zenith.zenith_app.star.StarRepository;
 import com.zenith.zenith_app.transaction.Transaction;
 import com.zenith.zenith_app.transaction.TransactionRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Component;
@@ -28,6 +29,17 @@ public class SecureEntity {
       throw new BadCredentialsException("Unauthorised access!");
     }
     return transaction;
+  }
+
+  public List<Transaction> getSecureTransactionByName(String transactionName, String username) {
+    List<Transaction> transactions =
+        transactionRepository.findByTransactionNameAndUser_Username(transactionName, username);
+
+    if (transactions.isEmpty()) {
+      throw new ResourceNotFoundException(
+          "Transaction with name " + transactionName + " not found!");
+    }
+    return transactions;
   }
 
   public Star getSecureStar(Long id, String username) {

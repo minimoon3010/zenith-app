@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import org.junit.jupiter.api.TestInstance;
@@ -94,5 +95,27 @@ public abstract class ConfigurationSetupTest {
         .andReturn()
         .getResponse()
         .getContentAsString();
+  }
+
+  protected List<String> createTransaction() throws Exception {
+    String transactionData = loadJson("transaction", "transaction.json");
+    List<Object> transactions = objectMapper.readValue(transactionData, new TypeReference<>() {});
+    List<String> responses = new ArrayList<>();
+
+    for (Object transaction : transactions) {
+      String response =
+          mockMvc
+              .perform(
+                  post("/api/transaction/new")
+                      .header("Authorization", "Bearer " + extractTokenFromLogin())
+                      .contentType(MediaType.APPLICATION_JSON)
+                      .content(objectMapper.writeValueAsString(transaction)))
+              .andReturn()
+              .getResponse()
+              .getContentAsString();
+
+      responses.add(response);
+    }
+    return responses;
   }
 }

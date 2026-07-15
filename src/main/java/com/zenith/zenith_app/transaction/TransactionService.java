@@ -1,5 +1,6 @@
 package com.zenith.zenith_app.transaction;
 
+import com.zenith.zenith_app.config.ResourceNotFoundException;
 import com.zenith.zenith_app.config.SecureEntity;
 import com.zenith.zenith_app.config.XPService;
 import com.zenith.zenith_app.user.UserRepository;
@@ -55,7 +56,7 @@ public class TransactionService {
     Transaction transaction = secureEntity.getSecureTransaction(id, username);
 
     if (transaction.getTransactionType() != TransactionType.POTENTIAL) {
-      throw new RuntimeException("Cannot edit a completed transaction!");
+      throw new IllegalArgumentException("Cannot edit a completed transaction!");
     }
 
     if (request.transactionName() != null) {
@@ -89,9 +90,7 @@ public class TransactionService {
   }
 
   public List<TransactionDTO> viewTransactionByName(String transactionName, String username) {
-    return transactionRepository
-        .findByTransactionNameAndUser_Username(transactionName, username)
-        .stream()
+    return secureEntity.getSecureTransactionByName(transactionName, username).stream()
         .map(TransactionDTO::fromTransaction)
         .toList();
   }
@@ -147,7 +146,7 @@ public class TransactionService {
     List<Transaction> transactions =
         transactionRepository.findByTransactionNameAndUser_Username(transactionName, username);
     if (transactions.isEmpty()) {
-      throw new RuntimeException("Transaction with this name does not exist.");
+      throw new ResourceNotFoundException("Transaction with this name does not exist.");
     } else {
       transactions.forEach(this::deletingPotentialTransactionOnly);
     }
@@ -157,7 +156,7 @@ public class TransactionService {
     if (transaction.getTransactionType() == TransactionType.POTENTIAL) {
       transactionRepository.delete(transaction);
     } else if (transaction.getTransactionType() == TransactionType.IMPULSE) {
-      throw new RuntimeException("That's cheating...");
+      throw new IllegalArgumentException("That's cheating...");
     } else {
       log.info("Keeping this transaction for ML predictor model.");
     }
