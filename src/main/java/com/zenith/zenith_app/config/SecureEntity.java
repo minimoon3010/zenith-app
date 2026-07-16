@@ -138,7 +138,7 @@ public class SecureEntity {
             .orElseThrow(() -> new ResourceNotFoundException("Mood does not exist."));
 
     if (!mood.getUser().getUsername().equals(username)) {
-      throw new BadCredentialsException("Unauthorised access!");
+      throw new ResourceNotFoundException("No record found!");
     }
     return mood;
   }

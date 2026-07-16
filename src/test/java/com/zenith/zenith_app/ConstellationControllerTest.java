@@ -25,8 +25,8 @@ public class ConstellationControllerTest extends ConfigurationSetupTest {
 
   @BeforeAll
   void before() throws Exception {
-    id = registerUser();
-    token = extractTokenFromLogin();
+    id = registerUser("register.json");
+    token = extractTokenFromLogin("login_happyPath.json");
 
     constellation = createConstellation();
     constellationId = objectMapper.readTree(constellation).get("id").asLong();

@@ -25,9 +25,10 @@ public abstract class ConfigurationSetupTest {
   @Autowired protected MockMvc mockMvc;
 
   protected final ObjectMapper objectMapper = new ObjectMapper();
+  protected String response;
 
-  protected Long registerUser() throws Exception {
-    String registerData = loadJson("user", "register.json");
+  protected Long registerUser(String filename) throws Exception {
+    String registerData = loadJson("user", filename);
 
     String response =
         mockMvc
@@ -42,22 +43,34 @@ public abstract class ConfigurationSetupTest {
     return objectMapper.readTree(response).get("id").asLong();
   }
 
-  protected String extractTokenFromLogin() throws Exception {
-    String loginData = loadJson("user", "login_happyPath.json");
+  protected String extractTokenFromLogin(String filename) throws Exception {
+    String loginData = loadJson("user", filename);
 
-    List<Object> logins = objectMapper.readValue(loginData, new TypeReference<>() {});
-    String singleLogin = objectMapper.writeValueAsString(logins.get(0));
-
-    String response =
-        mockMvc
-            .perform(
-                post("/api/auth/login")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(singleLogin))
-            .andDo(print())
-            .andReturn()
-            .getResponse()
-            .getContentAsString();
+    if (filename.equals("loginOtherUser.json")) {
+      response =
+          mockMvc
+              .perform(
+                  post("/api/auth/login")
+                      .contentType(MediaType.APPLICATION_JSON)
+                      .content(loginData))
+              .andDo(print())
+              .andReturn()
+              .getResponse()
+              .getContentAsString();
+    } else {
+      List<Object> logins = objectMapper.readValue(loginData, new TypeReference<>() {});
+      String singleLogin = objectMapper.writeValueAsString(logins.get(0));
+      response =
+          mockMvc
+              .perform(
+                  post("/api/auth/login")
+                      .contentType(MediaType.APPLICATION_JSON)
+                      .content(singleLogin))
+              .andDo(print())
+              .andReturn()
+              .getResponse()
+              .getContentAsString();
+    }
 
     return objectMapper.readTree(response).get("token").asText();
   }
@@ -76,7 +89,7 @@ public abstract class ConfigurationSetupTest {
     return mockMvc
         .perform(
             post("/api/constellation/new")
-                .header("Authorization", "Bearer " + extractTokenFromLogin())
+                .header("Authorization", "Bearer " + extractTokenFromLogin("login_happyPath.json"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(constellation))
         .andReturn()
@@ -89,7 +102,7 @@ public abstract class ConfigurationSetupTest {
     return mockMvc
         .perform(
             post("/api/star/new")
-                .header("Authorization", "Bearer " + extractTokenFromLogin())
+                .header("Authorization", "Bearer " + extractTokenFromLogin("login_happyPath.json"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(star))
         .andReturn()
@@ -107,7 +120,9 @@ public abstract class ConfigurationSetupTest {
           mockMvc
               .perform(
                   post("/api/transaction/new")
-                      .header("Authorization", "Bearer " + extractTokenFromLogin())
+                      .header(
+                          "Authorization",
+                          "Bearer " + extractTokenFromLogin("login_happyPath.json"))
                       .contentType(MediaType.APPLICATION_JSON)
                       .content(objectMapper.writeValueAsString(transaction)))
               .andReturn()
@@ -128,7 +143,9 @@ public abstract class ConfigurationSetupTest {
           mockMvc
               .perform(
                   post("/api/mood/new")
-                      .header("Authorization", "Bearer " + extractTokenFromLogin())
+                      .header(
+                          "Authorization",
+                          "Bearer " + extractTokenFromLogin("login_happyPath.json"))
                       .contentType(MediaType.APPLICATION_JSON)
                       .content(objectMapper.writeValueAsString(mood)))
               .andReturn()

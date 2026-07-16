@@ -29,8 +29,8 @@ public class UserControllerTest extends ConfigurationSetupTest {
 
   @BeforeAll
   void before() throws Exception {
-    id = registerUser();
-    token = extractTokenFromLogin();
+    id = registerUser("register.json");
+    token = extractTokenFromLogin("login_happyPath.json");
   }
 
   @Test

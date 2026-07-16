@@ -26,7 +26,7 @@ public class AuthControllerTest extends ConfigurationSetupTest {
 
   @BeforeAll
   void before() throws Exception {
-    registerUser();
+    registerUser("register.json");
   }
 
   @Test
