@@ -1,4 +1,5 @@
 package com.zenith.zenith_app.constellation;
 
-public record CreateConstellationRequest(String missionName, String objective) {
-}
+import jakarta.validation.constraints.NotBlank;
+
+public record CreateConstellationRequest(@NotBlank String missionName, String objective) {}

@@ -1,4 +1,6 @@
 application-local.yml
+src/test/resources/application-test.yml
+design.md
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar

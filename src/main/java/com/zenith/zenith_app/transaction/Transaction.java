@@ -2,10 +2,9 @@ package com.zenith.zenith_app.transaction;
 
 import com.zenith.zenith_app.user.User;
 import jakarta.persistence.*;
-import lombok.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import lombok.*;
 
 @Getter
 @Setter
@@ -16,27 +15,27 @@ import java.time.LocalDateTime;
 @Table(name = "z_transaction")
 public class Transaction {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+  @ManyToOne
+  @JoinColumn(name = "user_id")
+  private User user;
 
-    private String transactionName;
+  private String transactionName;
 
-    private BigDecimal amount;
+  private BigDecimal amount;
 
-    private LocalDateTime transactionCreated;
+  private LocalDateTime transactionCreated;
 
-    private LocalDateTime lastUpdated;
+  private LocalDateTime lastUpdated;
 
-    @Enumerated(EnumType.STRING)
-    private TransactionType transactionType;
+  @Enumerated(EnumType.STRING)
+  private TransactionType transactionType;
 
-    @Enumerated(EnumType.STRING)
-    private TransactionCategory transactionCategory;
+  @Enumerated(EnumType.STRING)
+  private TransactionCategory transactionCategory;
 
-    private boolean xpAwarded = false;
+  private boolean xpAwarded = false;
 }

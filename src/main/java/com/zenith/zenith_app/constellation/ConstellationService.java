@@ -1,72 +1,88 @@
 package com.zenith.zenith_app.constellation;
 
+import com.zenith.zenith_app.config.SecureEntity;
+import com.zenith.zenith_app.config.XPService;
+import com.zenith.zenith_app.star.StarStatus;
 import com.zenith.zenith_app.user.UserRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ConstellationService {
 
-    private final ConstellationRepository constellationRepository;
+  private final ConstellationRepository constellationRepository;
 
-    private final UserRepository userRepository;
+  private final UserRepository userRepository;
 
-    public ConstellationDTO createConstellation(CreateConstellationRequest request, String username) {
-        Constellation constellation = Constellation.builder()
-                .missionName(request.missionName())
-                .objective(request.objective())
-                .user(userRepository.findByUsername(username)
-                        .orElseThrow(() -> new RuntimeException("Username not found.")))
-                .build();
+  private final SecureEntity secureEntity;
+  private final XPService xpService;
 
-        return ConstellationDTO.fromConstellation(constellationRepository.save(constellation));
+  public ConstellationDTO createConstellation(CreateConstellationRequest request, String username) {
+    Constellation constellation =
+        Constellation.builder()
+            .missionName(request.missionName())
+            .objective(request.objective())
+            .user(
+                userRepository
+                    .findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("Username not found.")))
+            .build();
+
+    return ConstellationDTO.fromConstellation(constellationRepository.save(constellation));
+  }
+
+  public ConstellationDTO viewConstellationById(Long id, String username) {
+    Constellation constellation = secureEntity.getSecureConstellation(id, username);
+    return ConstellationDTO.fromConstellation(constellation);
+  }
+
+  public List<ConstellationDTO> viewConstellationByName(String missionName, String username) {
+    return constellationRepository.findByMissionNameAndUser_Username(missionName, username).stream()
+        .map(ConstellationDTO::fromConstellation)
+        .toList();
+  }
+
+  public ConstellationDTO updateConstellation(
+      UpdateConstellationRequest request, Long id, String username) {
+    Constellation constellation = secureEntity.getSecureConstellation(id, username);
+
+    if (request.missionName() != null) {
+      constellation.setMissionName(request.missionName());
     }
 
-    public ConstellationDTO viewConstellationById(Long id){
-        Optional<Constellation> optionalConstellation = constellationRepository.findById(id);
-        return optionalConstellation.map(ConstellationDTO::fromConstellation)
-                .orElseThrow(() -> new RuntimeException("Constellation does not exist."));
+    if (request.objective() != null) {
+      constellation.setObjective(request.objective());
     }
 
-    public ConstellationDTO viewConstellationByName(String missionName) {
-        Optional<Constellation> optionalConstellation = constellationRepository.findByMissionName(missionName);
-        return optionalConstellation.map(ConstellationDTO::fromConstellation)
-                .orElseThrow(() -> new RuntimeException("Constellation does not exist."));
-        // TODO: should return List<ConstellationDTO> - see defect issue
+    if (request.status() != null && request.status().equals(ConstellationStatus.COMPLETE)) {
+      if (!checkAllStarsInConstellationAreCompleted(constellation)) {
+        throw new IllegalStateException(
+            "Cannot complete a constellation with incomplete or missing stars.");
+      }
+
+      constellation.setStatus(request.status());
+      xpService.awardConstellationXP(constellation);
     }
 
-    public ConstellationDTO updateConstellation(UpdateConstellationRequest request, Long id){
-        Constellation constellation = constellationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Constellation does not exist."));
+    return ConstellationDTO.fromConstellation(constellationRepository.save(constellation));
+  }
 
-        constellation.setMissionName(request.missionName());
-        constellation.setObjective(request.objective());
+  public List<ConstellationDTO> viewAllConstellations(String username) {
+    return constellationRepository.findByUser_Username(username).stream()
+        .map(ConstellationDTO::fromConstellation)
+        .toList();
+  }
 
-        return ConstellationDTO.fromConstellation(constellationRepository.save(constellation));
-    }
+  public void deleteConstellationById(Long id, String username) {
+    Constellation constellation = secureEntity.getSecureConstellation(id, username);
+    constellationRepository.delete(constellation);
+  }
 
-    public List<ConstellationDTO> viewAllConstellations(String username){
-        return constellationRepository.findByUser_Username(username)
-                .stream()
-                .map(ConstellationDTO::fromConstellation)
-                .collect(Collectors.toList());
-    }
-
-    public void deleteConstellationById(Long id){
-        Constellation constellation = constellationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Constellation does not exist."));
-        constellationRepository.delete(constellation);
-    }
-
-    public void deleteConstellationByName(String missionName){
-        Constellation constellation = constellationRepository.findByMissionName(missionName)
-                .orElseThrow(() -> new RuntimeException("Constellation does not exist."));
-        constellationRepository.delete(constellation);
-    }
-
+  private boolean checkAllStarsInConstellationAreCompleted(Constellation constellation) {
+    return !constellation.getStars().isEmpty()
+        && constellation.getStars().stream()
+            .allMatch(star -> star.getStatus().equals(StarStatus.COMPLETED));
+  }
 }

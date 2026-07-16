@@ -11,11 +11,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private final AuthService authService;
+  private final AuthService authService;
 
-    @PostMapping("/login")
-    public JWTResponse login(@RequestBody LoginRequest loginRequest){
-        return authService.login(loginRequest);
-    }
-
+  @PostMapping("/login")
+  public JWTResponse login(@RequestBody LoginRequest loginRequest) {
+    return authService.login(loginRequest);
+  }
 }

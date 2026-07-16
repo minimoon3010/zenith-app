@@ -1,89 +1,114 @@
 package com.zenith.zenith_app.star;
 
+import com.zenith.zenith_app.config.ResourceNotFoundException;
+import com.zenith.zenith_app.config.SecureEntity;
+import com.zenith.zenith_app.config.XPService;
 import com.zenith.zenith_app.config.ZenithConstants;
 import com.zenith.zenith_app.constellation.Constellation;
-import com.zenith.zenith_app.constellation.ConstellationRepository;
+import com.zenith.zenith_app.user.UserRepository;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class StarService {
 
-    private final StarRepository starRepository;
+  private final StarRepository starRepository;
 
-    private final ConstellationRepository constellationRepository;
+  private final UserRepository userRepository;
 
-    public StarDTO createStar(CreateStarRequest request, Long constellationId){
-        Star star = Star.builder()
-                .name(request.name())
-                .description(request.description())
-                .status(StarStatus.NOT_STARTED)
-                .xp(ZenithConstants.STAR_XP)
-                .constellation(constellationRepository.findById(constellationId)
-                        .orElseThrow(() -> new RuntimeException("Constellation not found.")))
-                .build();
-        return StarDTO.fromStar(starRepository.save(star));
+  private final SecureEntity secureEntity;
+  private final XPService xpService;
+
+  public StarDTO createStar(CreateStarRequest request, Long constellationId, String username) {
+    Star star =
+        Star.builder()
+            .name(request.name())
+            .description(request.description())
+            .status(StarStatus.NOT_STARTED)
+            .constellation(secureEntity.getSecureConstellation(constellationId, username))
+            .user(
+                userRepository
+                    .findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("Username not found.")))
+            .build();
+    return StarDTO.fromStar(starRepository.save(star));
+  }
+
+  public StarDTO viewStarById(Long id, String username) {
+    Star star = secureEntity.getSecureStar(id, username);
+    return StarDTO.fromStar(star);
+  }
+
+  public List<StarDTO> viewStarByName(String starName, String username) {
+    return starRepository.findByNameAndUser_Username(starName, username).stream()
+        .map(StarDTO::fromStar)
+        .toList();
+  }
+
+  public List<StarDTO> filterByStatus(StarStatus status, String username) {
+    return starRepository.findByStatusAndUser_Username(status, username).stream()
+        .map(StarDTO::fromStar)
+        .toList();
+  }
+
+  public List<StarDTO> getAllStarsByConstellation(Long constellationId, String username) {
+    return starRepository
+        .findByConstellation(secureEntity.getSecureConstellation(constellationId, username))
+        .stream()
+        .map(StarDTO::fromStar)
+        .toList();
+  }
+
+  public StarDTO updateStar(UpdateStarRequest request, Long id, String username) {
+    Star star = secureEntity.getSecureStar(id, username);
+
+    if (request.name() != null) {
+      star.setName(request.name());
     }
 
-    public StarDTO viewStarById(Long id){
-        Optional<Star> star = starRepository.findById(id);
-        return star.map(StarDTO::fromStar).orElseThrow(() -> new RuntimeException("Star does not exist."));
+    if (request.description() != null) {
+      star.setDescription(request.description());
     }
 
-    public List<StarDTO> viewStarByName(String starName) {
-        return starRepository.findByName(starName)
-                .stream()
-                .map(StarDTO::fromStar)
-                .collect(Collectors.toList());
+    if (request.status() != null) {
+      star.setStatus(request.status());
+      if (request.status().equals(StarStatus.COMPLETED)) {
+        star.setXp(starXPBasedOnConstellationCount(star.getConstellation().getId(), username));
+        xpService.awardStarXP(star);
+      }
     }
 
-    public List<StarDTO> filterByStatus(StarStatus status){
-        return starRepository.findByStatus(status)
-                .stream()
-                .map(StarDTO::fromStar)
-                .collect(Collectors.toList());
+    if (request.constellationId() != null) {
+      Constellation constellation =
+          secureEntity.getSecureConstellation(request.constellationId(), username);
+      star.setConstellation(constellation);
     }
 
-    public List<StarDTO> getAllStarsByConstellation(Long constellationId){
-        return starRepository.findByConstellation(constellationRepository.findById(constellationId)
-                        .orElseThrow(() -> new RuntimeException("Constellation not found.")))
-                .stream()
-                .map(StarDTO::fromStar)
-                .collect(Collectors.toList());
+    return StarDTO.fromStar(starRepository.save(star));
+  }
+
+  public void deleteStarById(Long id, String username) {
+    Star star = secureEntity.getSecureStar(id, username);
+    starRepository.delete(star);
+  }
+
+  public void deleteStarByName(String starName, String username) {
+    List<Star> star = starRepository.findByNameAndUser_Username(starName, username);
+    if (!star.isEmpty()) {
+      starRepository.deleteAll(star);
+    } else {
+      throw new ResourceNotFoundException("Star with this name does not exist.");
     }
+  }
 
-    public StarDTO updateStar(UpdateStarRequest request, Long id){
-        Star star = starRepository.findById(id).orElseThrow(() -> new RuntimeException("Star does not exist."));
-
-        star.setName(request.name());
-        star.setDescription(request.description());
-        star.setStatus(request.status());
-
-        if (request.constellationId() != null){
-            Constellation constellation = constellationRepository.findById(request.constellationId())
-                    .orElseThrow(() -> new RuntimeException("Constellation not found."));
-            star.setConstellation(constellation);
-        }
-
-        return StarDTO.fromStar(starRepository.save(star));
+  private int starXPBasedOnConstellationCount(Long constellationId, String username) {
+    if (getAllStarsByConstellation(constellationId, username).size()
+        >= ZenithConstants.CONSTELLATION_MIN_STARS_FOR_BONUS) {
+      return ZenithConstants.LARGE_CONSTELLATION_STAR_XP;
+    } else {
+      return ZenithConstants.INITIAL_STAR_XP;
     }
-
-    public void deleteStarById(Long id){
-        Star star = starRepository.findById(id).orElseThrow(() -> new RuntimeException("Star does not exist."));
-        starRepository.delete(star);
-    }
-
-    public void deleteStarByName(String starName){
-        List<Star> star = starRepository.findByName(starName);
-        if (!star.isEmpty()){
-            starRepository.deleteAll(star);
-        } else {
-            throw new RuntimeException("Star with this name does not exist.");
-        }
-    }
+  }
 }
