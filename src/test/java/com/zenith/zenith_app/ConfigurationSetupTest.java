@@ -118,4 +118,24 @@ public abstract class ConfigurationSetupTest {
     }
     return responses;
   }
+
+  protected List<String> createMood() throws Exception {
+    String moodData = loadJson("mood", "mood.json");
+    List<Object> moods = objectMapper.readValue(moodData, new TypeReference<>() {});
+    List<String> responses = new ArrayList<>();
+    for (Object mood : moods) {
+      String response =
+          mockMvc
+              .perform(
+                  post("/api/mood/new")
+                      .header("Authorization", "Bearer " + extractTokenFromLogin())
+                      .contentType(MediaType.APPLICATION_JSON)
+                      .content(objectMapper.writeValueAsString(mood)))
+              .andReturn()
+              .getResponse()
+              .getContentAsString();
+      responses.add(response);
+    }
+    return responses;
+  }
 }

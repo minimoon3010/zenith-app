@@ -1,5 +1,6 @@
 package com.zenith.zenith_app.mood;
 
+import com.zenith.zenith_app.config.SecureEntity;
 import com.zenith.zenith_app.user.UserRepository;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,13 +16,18 @@ public class MoodService {
 
   private final UserRepository userRepository;
 
+  private final SecureEntity secureEntity;
+
   public MoodDTO createMood(CreateMoodRequest request, String username) {
+
+    LocalDateTime now = LocalDateTime.now();
+
     Mood mood =
         Mood.builder()
             .status(request.status())
             .energy(request.energy())
-            .createdAt(LocalDateTime.now())
-            .lastUpdated(LocalDateTime.now())
+            .createdAt(now)
+            .lastUpdated(now)
             .user(
                 userRepository
                     .findByUsername(username)
@@ -38,7 +44,7 @@ public class MoodService {
   }
 
   public MoodDTO viewMoodById(Long id, String username) {
-    Mood mood = getSecureMood(id, username);
+    Mood mood = secureEntity.getSecureMood(id, username);
     return MoodDTO.fromMood(mood);
   }
 
@@ -58,7 +64,7 @@ public class MoodService {
   }
 
   public MoodDTO updateMood(UpdateMoodRequest request, Long id, String username) {
-    Mood mood = getSecureMood(id, username);
+    Mood mood = secureEntity.getSecureMood(id, username);
 
     if (request.status() != null) {
       mood.setStatus(request.status());
@@ -69,15 +75,5 @@ public class MoodService {
     mood.setLastUpdated(LocalDateTime.now());
 
     return MoodDTO.fromMood(moodRepository.save(mood));
-  }
-
-  private Mood getSecureMood(Long id, String username) {
-    Mood mood =
-        moodRepository.findById(id).orElseThrow(() -> new RuntimeException("Mood does not exist."));
-
-    if (!mood.getUser().getUsername().equals(username)) {
-      throw new RuntimeException("Unauthorised access!");
-    }
-    return mood;
   }
 }

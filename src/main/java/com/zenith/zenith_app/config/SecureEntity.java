@@ -2,6 +2,8 @@ package com.zenith.zenith_app.config;
 
 import com.zenith.zenith_app.constellation.Constellation;
 import com.zenith.zenith_app.constellation.ConstellationRepository;
+import com.zenith.zenith_app.mood.Mood;
+import com.zenith.zenith_app.mood.MoodRepository;
 import com.zenith.zenith_app.star.Star;
 import com.zenith.zenith_app.star.StarRepository;
 import com.zenith.zenith_app.transaction.Transaction;
@@ -18,6 +20,7 @@ public class SecureEntity {
   private final TransactionRepository transactionRepository;
   private final StarRepository starRepository;
   private final ConstellationRepository constellationRepository;
+  private final MoodRepository moodRepository;
 
   public Transaction getSecureTransaction(Long id, String username) {
     Transaction transaction =
@@ -65,5 +68,17 @@ public class SecureEntity {
       throw new BadCredentialsException("Unauthorised access!");
     }
     return constellation;
+  }
+
+  public Mood getSecureMood(Long id, String username) {
+    Mood mood =
+        moodRepository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Mood does not exist."));
+
+    if (!mood.getUser().getUsername().equals(username)) {
+      throw new BadCredentialsException("Unauthorised access!");
+    }
+    return mood;
   }
 }
