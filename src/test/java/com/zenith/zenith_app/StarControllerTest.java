@@ -31,8 +31,8 @@ public class StarControllerTest extends ConfigurationSetupTest {
 
   @BeforeAll
   void before() throws Exception {
-    id = registerUser();
-    token = extractTokenFromLogin();
+    id = registerUser("register.json");
+    token = extractTokenFromLogin("login_happyPath.json");
 
     // Creating a constellation and star for testing
     constellation = createConstellation();

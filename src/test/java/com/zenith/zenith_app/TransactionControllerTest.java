@@ -39,8 +39,8 @@ public class TransactionControllerTest extends ConfigurationSetupTest {
 
   @BeforeAll
   void before() throws Exception {
-    id = registerUser();
-    token = extractTokenFromLogin();
+    id = registerUser("register.json");
+    token = extractTokenFromLogin("login_happyPath.json");
     transactions = createTransaction();
     transactionId1 = objectMapper.readTree(transactions.get(0)).get("id").asLong();
     transactionId2 = objectMapper.readTree(transactions.get(1)).get("id").asLong();

@@ -35,8 +35,8 @@ public class MoodControllerTest extends ConfigurationSetupTest {
 
   @BeforeAll
   void beforeAll() throws Exception {
-    id = registerUser();
-    token = extractTokenFromLogin();
+    id = registerUser("register.json");
+    token = extractTokenFromLogin("login_happyPath.json");
     moods = createMood();
     moodStatus4 = objectMapper.readTree(moods.get(3)).get("status").asInt();
     moodId1 = objectMapper.readTree(moods.get(0)).get("id").asLong();
@@ -134,6 +134,37 @@ public class MoodControllerTest extends ConfigurationSetupTest {
                 .content(("{\"energy\": \"Decent mood\"}")))
 
         // Assert HTTP 404
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void testUpdateMood_OwnershipViolation_SadPath() throws Exception {
+    registerUser("registerOtherUser.json");
+    String tokenUserB = extractTokenFromLogin("loginOtherUser.json");
+
+    mockMvc
+        .perform(
+            put("/api/mood/update/" + moodId1)
+                .header("Authorization", "Bearer " + tokenUserB)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"energy\": \"Trying to edit someone else's mood\"}"))
+
+        // Assert HTTP 404 — User B should not be able to update User A's mood
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void testViewMoodById_OwnershipViolation_SadPath() throws Exception {
+    registerUser("registerOtherUser.json");
+    String tokenUserB = extractTokenFromLogin("loginOtherUser.json");
+
+    mockMvc
+        .perform(
+            get("/api/mood/view/id/" + moodId1)
+                .header("Authorization", "Bearer " + tokenUserB)
+                .contentType(MediaType.APPLICATION_JSON))
+
+        // Assert HTTP 404 — User B should not be able to view User A's mood
         .andExpect(status().isNotFound());
   }
 
