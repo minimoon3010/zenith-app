@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -55,7 +56,8 @@ public class TransactionController {
   public List<TransactionDTO> filterTransactionByAmount(
       @RequestParam BigDecimal lower,
       @RequestParam BigDecimal higher,
-      @AuthenticationPrincipal UserDetails userDetails) {
+      @AuthenticationPrincipal UserDetails userDetails)
+      throws BadRequestException {
     return transactionService.filterTransactionByAmount(lower, higher, userDetails.getUsername());
   }
 

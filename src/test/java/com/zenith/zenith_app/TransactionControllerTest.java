@@ -7,6 +7,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.zenith.zenith_app.transaction.TransactionCategory;
+import com.zenith.zenith_app.transaction.TransactionType;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.AfterAll;
@@ -33,6 +35,7 @@ public class TransactionControllerTest extends ConfigurationSetupTest {
   protected long transactionId3;
   protected long transactionId4;
   protected String updatedTransaction2Name;
+  protected String voidCategory = "VOID";
 
   @BeforeAll
   void before() throws Exception {
@@ -51,7 +54,7 @@ public class TransactionControllerTest extends ConfigurationSetupTest {
     ResultActions createTransactionRequest =
         mockMvc.perform(
             post("/api/transaction/new")
-                .header("Authorization", "Bearer " + extractTokenFromLogin())
+                .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(transaction));
 
@@ -73,7 +76,7 @@ public class TransactionControllerTest extends ConfigurationSetupTest {
     ResultActions createTransactionRequest =
         mockMvc.perform(
             post("/api/transaction/new")
-                .header("Authorization", "Bearer " + extractTokenFromLogin())
+                .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(transaction));
 
@@ -88,7 +91,7 @@ public class TransactionControllerTest extends ConfigurationSetupTest {
           .perform(
               get("/api/transaction/view/id/"
                       + objectMapper.readTree(transaction).get("id").asLong())
-                  .header("Authorization", "Bearer " + extractTokenFromLogin())
+                  .header("Authorization", "Bearer " + token)
                   .contentType(MediaType.APPLICATION_JSON))
           // Assert HTTP 200
           .andExpect(status().isOk())
@@ -101,9 +104,9 @@ public class TransactionControllerTest extends ConfigurationSetupTest {
     mockMvc
         .perform(
             get("/api/transaction/view/id/" + -1)
-                .header("Authorization", "Bearer " + extractTokenFromLogin())
+                .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON))
-        // Assert HTTP 400
+        // Assert HTTP 404
         .andExpect(status().isNotFound());
   }
 
@@ -112,7 +115,7 @@ public class TransactionControllerTest extends ConfigurationSetupTest {
     mockMvc
         .perform(
             get("/api/transaction/view/all")
-                .header("Authorization", "Bearer " + extractTokenFromLogin())
+                .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON))
         // Assert HTTP 200
         .andExpect(status().isOk());
@@ -125,7 +128,7 @@ public class TransactionControllerTest extends ConfigurationSetupTest {
           .perform(
               get("/api/transaction/view/name/"
                       + objectMapper.readTree(transaction).get("transactionName").asText())
-                  .header("Authorization", "Bearer " + extractTokenFromLogin())
+                  .header("Authorization", "Bearer " + token)
                   .contentType(MediaType.APPLICATION_JSON))
           // Assert HTTP 200
           .andExpect(status().isOk())
@@ -148,9 +151,9 @@ public class TransactionControllerTest extends ConfigurationSetupTest {
     mockMvc
         .perform(
             get("/api/transaction/view/name/" + "nonexistent transaction")
-                .header("Authorization", "Bearer " + extractTokenFromLogin())
+                .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON))
-        // Assert HTTP 400
+        // Assert HTTP 404
         .andExpect(status().isNotFound());
   }
 
@@ -219,7 +222,7 @@ public class TransactionControllerTest extends ConfigurationSetupTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(("{\"transactionType\" : \"IMPULSE\"}")))
 
-        // Assert HTTP 400
+        // Assert HTTP 404
         .andExpect(status().isNotFound());
   }
 
@@ -238,10 +241,136 @@ public class TransactionControllerTest extends ConfigurationSetupTest {
   }
 
   @Test
+  void testFilterTransactionByCategory_SadPath() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/transaction/filter/category/" + voidCategory)
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON))
+
+        // Assert HTTP 400
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void testFilterTransactionByCategory_HappyPath() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/transaction/filter/category/" + TransactionCategory.OTHER)
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON))
+
+        // Assert HTTP 200
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void testFilterTransactionByType_SadPath() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/transaction/filter/type/" + voidCategory)
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON))
+
+        // Assert HTTP 400
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void testFilterTransactionByType_HappyPath() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/transaction/filter/type/" + TransactionType.POTENTIAL)
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON))
+
+        // Assert HTTP 200
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void testFilterTransactionByAmount_SadPath_NotFound() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/transaction/filter/amount")
+                .param("lower", "1000")
+                .param("higher", "10000")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON))
+
+        // Assert HTTP 404
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void testFilterTransactionByAmount_SadPath_InvalidInput() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/transaction/filter/amount")
+                .param("lower", "1000")
+                .param("higher", "10")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON))
+
+        // Assert HTTP 400
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void testFilterTransactionByAmount_HappyPath() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/transaction/filter/amount")
+                .param("lower", "1")
+                .param("higher", "100")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON))
+
+        // Assert HTTP 200
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void testFilterTransactionByTimestamp_SadPath() throws Exception {
+    LocalDateTime earlier = LocalDateTime.of(2023, 1, 1, 0, 0, 0);
+    LocalDateTime later = LocalDateTime.of(2023, 12, 31, 0, 0, 0);
+
+    mockMvc
+        .perform(
+            get("/api/transaction/filter/time")
+                .param("earlier", earlier.toString())
+                .param("later", later.toString())
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON))
+
+        // Assert HTTP 404
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void testFilterTransactionByTimestamp_HappyPath() throws Exception {
+    LocalDateTime earlier = LocalDateTime.of(2026, 1, 1, 0, 0, 0);
+    LocalDateTime later = LocalDateTime.of(2026, 12, 31, 0, 0, 0);
+
+    mockMvc
+        .perform(
+            get("/api/transaction/filter/time")
+                .param("earlier", earlier.toString())
+                .param("later", later.toString())
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON))
+
+        // Assert HTTP 200
+        .andExpect(status().isOk());
+  }
+
+  @Test
   void testDeleteTransactionById_SadPath() throws Exception {
     mockMvc
         .perform(
             delete("/api/transaction/delete/id/" + -1).header("Authorization", "Bearer " + token))
+
+        // Assert HTTP 404
         .andExpect(status().isNotFound());
   }
 
@@ -251,6 +380,8 @@ public class TransactionControllerTest extends ConfigurationSetupTest {
         .perform(
             delete("/api/transaction/delete/name/" + "test")
                 .header("Authorization", "Bearer " + token))
+
+        // Assert HTTP 404
         .andExpect(status().isNotFound());
   }
 
@@ -260,6 +391,8 @@ public class TransactionControllerTest extends ConfigurationSetupTest {
         .perform(
             delete("/api/transaction/delete/id/" + transactionId4)
                 .header("Authorization", "Bearer " + token))
+
+        // Assert HTTP 400
         .andExpect(status().isBadRequest());
   }
 

@@ -7,9 +7,14 @@ import com.zenith.zenith_app.mood.MoodRepository;
 import com.zenith.zenith_app.star.Star;
 import com.zenith.zenith_app.star.StarRepository;
 import com.zenith.zenith_app.transaction.Transaction;
+import com.zenith.zenith_app.transaction.TransactionCategory;
 import com.zenith.zenith_app.transaction.TransactionRepository;
+import com.zenith.zenith_app.transaction.TransactionType;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Component;
 
@@ -41,6 +46,62 @@ public class SecureEntity {
     if (transactions.isEmpty()) {
       throw new ResourceNotFoundException(
           "Transaction with name " + transactionName + " not found!");
+    }
+    return transactions;
+  }
+
+  public List<Transaction> getSecureTransactionByCategory(
+      TransactionCategory transactionCategory, String username) {
+    List<Transaction> transactions =
+        transactionRepository.findByTransactionCategoryAndUser_Username(
+            transactionCategory, username);
+
+    if (transactions.isEmpty()) {
+      throw new ResourceNotFoundException(
+          "Transaction with category " + transactionCategory + " not found!");
+    }
+
+    return transactions;
+  }
+
+  public List<Transaction> getSecureTransactionByType(
+      TransactionType transactionType, String username) {
+    List<Transaction> transactions =
+        transactionRepository.findByTransactionTypeAndUser_Username(transactionType, username);
+
+    if (transactions.isEmpty()) {
+      throw new ResourceNotFoundException(
+          "Transaction with type " + transactionType + " not found!");
+    }
+    return transactions;
+  }
+
+  public List<Transaction> getSecureTransactionByAmount(
+      BigDecimal lower, BigDecimal higher, String username) throws BadRequestException {
+    List<Transaction> transactions =
+        transactionRepository.findByAmountBetweenAndUser_Username(lower, higher, username);
+
+    if (higher.compareTo(lower) < 0) {
+      throw new BadRequestException("Higher amount can't be less than lower amount.");
+    }
+
+    if (transactions.isEmpty()) {
+      throw new ResourceNotFoundException(
+          "Transaction between £" + lower + " and £" + higher + " not found!");
+    }
+
+    return transactions;
+  }
+
+  public List<Transaction> getSecureTransactionByTimestamp(
+      LocalDateTime earlier, LocalDateTime later, String username) {
+    List<Transaction> transactions =
+        transactionRepository.findByTransactionCreatedBetweenAndUser_Username(
+            earlier, later, username);
+
+    if (transactions.isEmpty()) {
+      throw new ResourceNotFoundException(
+          "Transaction between " + earlier + " and " + later + " not found!");
     }
     return transactions;
   }

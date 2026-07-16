@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -96,37 +97,29 @@ public class TransactionService {
   }
 
   public List<TransactionDTO> filterTransactionByAmount(
-      BigDecimal lower, BigDecimal higher, String username) {
-    return transactionRepository
-        .findByAmountBetweenAndUser_Username(lower, higher, username)
-        .stream()
+      BigDecimal lower, BigDecimal higher, String username) throws BadRequestException {
+    return secureEntity.getSecureTransactionByAmount(lower, higher, username).stream()
         .map(TransactionDTO::fromTransaction)
         .toList();
   }
 
   public List<TransactionDTO> filterTransactionByCreatedBetween(
       LocalDateTime earlier, LocalDateTime later, String username) {
-    return transactionRepository
-        .findByTransactionCreatedBetweenAndUser_Username(earlier, later, username)
-        .stream()
+    return secureEntity.getSecureTransactionByTimestamp(earlier, later, username).stream()
         .map(TransactionDTO::fromTransaction)
         .toList();
   }
 
   public List<TransactionDTO> filterTransactionByType(
       TransactionType transactionType, String username) {
-    return transactionRepository
-        .findByTransactionTypeAndUser_Username(transactionType, username)
-        .stream()
+    return secureEntity.getSecureTransactionByType(transactionType, username).stream()
         .map(TransactionDTO::fromTransaction)
         .toList();
   }
 
   public List<TransactionDTO> filterTransactionByCategory(
       TransactionCategory transactionCategory, String username) {
-    return transactionRepository
-        .findByTransactionCategoryAndUser_Username(transactionCategory, username)
-        .stream()
+    return secureEntity.getSecureTransactionByCategory(transactionCategory, username).stream()
         .map(TransactionDTO::fromTransaction)
         .toList();
   }
