@@ -25,9 +25,9 @@ public class StarController {
     return starService.viewStarById(starId, userDetails.getUsername());
   }
 
-  @GetMapping("/view/name/{starName}")
+  @GetMapping("/view/name")
   public List<StarDTO> viewStarByName(
-      @PathVariable String starName, @AuthenticationPrincipal UserDetails userDetails) {
+      @RequestParam String starName, @AuthenticationPrincipal UserDetails userDetails) {
     return starService.viewStarByName(starName, userDetails.getUsername());
   }
 

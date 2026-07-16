@@ -28,21 +28,9 @@ public class ConstellationControllerTest extends ConfigurationSetupTest {
     id = registerUser();
     token = extractTokenFromLogin();
 
-    // Creating a constellation for testing
-    constellation = loadJson("constellation", "constellation.json");
-    String response =
-        mockMvc
-            .perform(
-                post("/api/constellation/new")
-                    .header("Authorization", "Bearer " + token)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(constellation))
-            .andReturn()
-            .getResponse()
-            .getContentAsString();
-
-    constellationId = objectMapper.readTree(response).get("id").asLong();
-    constellationName = objectMapper.readTree(response).get("missionName").asText();
+    constellation = createConstellation();
+    constellationId = objectMapper.readTree(constellation).get("id").asLong();
+    constellationName = objectMapper.readTree(constellation).get("missionName").asText();
   }
 
   @Test
@@ -135,11 +123,12 @@ public class ConstellationControllerTest extends ConfigurationSetupTest {
         .andExpect(jsonPath("$.objective").value("Take Care of Leïla first and then Sailor."));
   }
 
+  // Invalid ConstellationId
   @Test
   void testViewConstellationById_SadPath() throws Exception {
     mockMvc
-        .perform(get("/api/constellation/view/id/999").header("Authorization", "Bearer " + token))
-        .andExpect(status().is5xxServerError());
+        .perform(get("/api/constellation/view/id/" + -1).header("Authorization", "Bearer " + token))
+        .andExpect(status().isNotFound());
   }
 
   @Test
@@ -152,23 +141,25 @@ public class ConstellationControllerTest extends ConfigurationSetupTest {
         .andExpect(jsonPath("$").isEmpty());
   }
 
+  // Invalid ConstellationId
   @Test
   void testUpdateConstellation_SadPath() throws Exception {
     mockMvc
         .perform(
-            put("/api/constellation/update/999")
+            put("/api/constellation/update/" + -1)
                 .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"objective\": \"test\"}"))
-        .andExpect(status().is5xxServerError());
+        .andExpect(status().isNotFound());
   }
 
+  // Invalid ConstellationId
   @Test
   void testDeleteConstellation_SadPath() throws Exception {
     mockMvc
         .perform(
-            delete("/api/constellation/delete/id/999").header("Authorization", "Bearer " + token))
-        .andExpect(status().is5xxServerError());
+            delete("/api/constellation/delete/id/" + -1).header("Authorization", "Bearer " + token))
+        .andExpect(status().isNotFound());
   }
 
   @AfterAll

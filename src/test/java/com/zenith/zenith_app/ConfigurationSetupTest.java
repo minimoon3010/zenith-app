@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import org.junit.jupiter.api.TestInstance;
@@ -68,5 +69,73 @@ public abstract class ConfigurationSetupTest {
                     .getClassLoader()
                     .getResourceAsStream("data/" + folder + "/" + filename))
             .readAllBytes());
+  }
+
+  protected String createConstellation() throws Exception {
+    String constellation = loadJson("constellation", "constellation.json");
+    return mockMvc
+        .perform(
+            post("/api/constellation/new")
+                .header("Authorization", "Bearer " + extractTokenFromLogin())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(constellation))
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+  }
+
+  protected String createStar() throws Exception {
+    String star = loadJson("star", "star.json");
+    return mockMvc
+        .perform(
+            post("/api/star/new")
+                .header("Authorization", "Bearer " + extractTokenFromLogin())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(star))
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+  }
+
+  protected List<String> createTransaction() throws Exception {
+    String transactionData = loadJson("transaction", "transaction.json");
+    List<Object> transactions = objectMapper.readValue(transactionData, new TypeReference<>() {});
+    List<String> responses = new ArrayList<>();
+
+    for (Object transaction : transactions) {
+      String response =
+          mockMvc
+              .perform(
+                  post("/api/transaction/new")
+                      .header("Authorization", "Bearer " + extractTokenFromLogin())
+                      .contentType(MediaType.APPLICATION_JSON)
+                      .content(objectMapper.writeValueAsString(transaction)))
+              .andReturn()
+              .getResponse()
+              .getContentAsString();
+
+      responses.add(response);
+    }
+    return responses;
+  }
+
+  protected List<String> createMood() throws Exception {
+    String moodData = loadJson("mood", "mood.json");
+    List<Object> moods = objectMapper.readValue(moodData, new TypeReference<>() {});
+    List<String> responses = new ArrayList<>();
+    for (Object mood : moods) {
+      String response =
+          mockMvc
+              .perform(
+                  post("/api/mood/new")
+                      .header("Authorization", "Bearer " + extractTokenFromLogin())
+                      .contentType(MediaType.APPLICATION_JSON)
+                      .content(objectMapper.writeValueAsString(mood)))
+              .andReturn()
+              .getResponse()
+              .getContentAsString();
+      responses.add(response);
+    }
+    return responses;
   }
 }

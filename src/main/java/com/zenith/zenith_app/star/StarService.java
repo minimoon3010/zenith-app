@@ -1,5 +1,6 @@
 package com.zenith.zenith_app.star;
 
+import com.zenith.zenith_app.config.ResourceNotFoundException;
 import com.zenith.zenith_app.config.SecureEntity;
 import com.zenith.zenith_app.config.XPService;
 import com.zenith.zenith_app.config.ZenithConstants;
@@ -98,7 +99,7 @@ public class StarService {
     if (!star.isEmpty()) {
       starRepository.deleteAll(star);
     } else {
-      throw new RuntimeException("Star with this name does not exist.");
+      throw new ResourceNotFoundException("Star with this name does not exist.");
     }
   }
 

@@ -1,5 +1,6 @@
 package com.zenith.zenith_app.transaction;
 
+import com.zenith.zenith_app.config.ResourceNotFoundException;
 import com.zenith.zenith_app.config.SecureEntity;
 import com.zenith.zenith_app.config.XPService;
 import com.zenith.zenith_app.user.UserRepository;
@@ -8,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -55,7 +57,7 @@ public class TransactionService {
     Transaction transaction = secureEntity.getSecureTransaction(id, username);
 
     if (transaction.getTransactionType() != TransactionType.POTENTIAL) {
-      throw new RuntimeException("Cannot edit a completed transaction!");
+      throw new IllegalArgumentException("Cannot edit a completed transaction!");
     }
 
     if (request.transactionName() != null) {
@@ -89,45 +91,35 @@ public class TransactionService {
   }
 
   public List<TransactionDTO> viewTransactionByName(String transactionName, String username) {
-    return transactionRepository
-        .findByTransactionNameAndUser_Username(transactionName, username)
-        .stream()
+    return secureEntity.getSecureTransactionByName(transactionName, username).stream()
         .map(TransactionDTO::fromTransaction)
         .toList();
   }
 
   public List<TransactionDTO> filterTransactionByAmount(
-      BigDecimal lower, BigDecimal higher, String username) {
-    return transactionRepository
-        .findByAmountBetweenAndUser_Username(lower, higher, username)
-        .stream()
+      BigDecimal lower, BigDecimal higher, String username) throws BadRequestException {
+    return secureEntity.getSecureTransactionByAmount(lower, higher, username).stream()
         .map(TransactionDTO::fromTransaction)
         .toList();
   }
 
   public List<TransactionDTO> filterTransactionByCreatedBetween(
       LocalDateTime earlier, LocalDateTime later, String username) {
-    return transactionRepository
-        .findByTransactionCreatedBetweenAndUser_Username(earlier, later, username)
-        .stream()
+    return secureEntity.getSecureTransactionByTimestamp(earlier, later, username).stream()
         .map(TransactionDTO::fromTransaction)
         .toList();
   }
 
   public List<TransactionDTO> filterTransactionByType(
       TransactionType transactionType, String username) {
-    return transactionRepository
-        .findByTransactionTypeAndUser_Username(transactionType, username)
-        .stream()
+    return secureEntity.getSecureTransactionByType(transactionType, username).stream()
         .map(TransactionDTO::fromTransaction)
         .toList();
   }
 
   public List<TransactionDTO> filterTransactionByCategory(
       TransactionCategory transactionCategory, String username) {
-    return transactionRepository
-        .findByTransactionCategoryAndUser_Username(transactionCategory, username)
-        .stream()
+    return secureEntity.getSecureTransactionByCategory(transactionCategory, username).stream()
         .map(TransactionDTO::fromTransaction)
         .toList();
   }
@@ -147,7 +139,7 @@ public class TransactionService {
     List<Transaction> transactions =
         transactionRepository.findByTransactionNameAndUser_Username(transactionName, username);
     if (transactions.isEmpty()) {
-      throw new RuntimeException("Transaction with this name does not exist.");
+      throw new ResourceNotFoundException("Transaction with this name does not exist.");
     } else {
       transactions.forEach(this::deletingPotentialTransactionOnly);
     }
@@ -157,7 +149,7 @@ public class TransactionService {
     if (transaction.getTransactionType() == TransactionType.POTENTIAL) {
       transactionRepository.delete(transaction);
     } else if (transaction.getTransactionType() == TransactionType.IMPULSE) {
-      throw new RuntimeException("That's cheating...");
+      throw new IllegalArgumentException("That's cheating...");
     } else {
       log.info("Keeping this transaction for ML predictor model.");
     }

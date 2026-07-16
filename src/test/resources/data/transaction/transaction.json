@@ -1,0 +1,26 @@
+[
+  {
+    "transactionName": "Feather Wand for Sailor",
+    "amount": 14.00,
+    "transactionType": "POTENTIAL",
+    "transactionCategory": "OTHER"
+  },
+  {
+    "transactionName": "Feather Wand for Leïla",
+    "amount": 14.00,
+    "transactionType": "POTENTIAL",
+    "transactionCategory": "OTHER"
+  },
+  {
+    "transactionName": "More toys for the cats",
+    "amount": 25.00,
+    "transactionType": "PURCHASED",
+    "transactionCategory": "OTHER"
+  },
+  {
+    "transactionName": "Blue cat scratching post",
+    "amount": 200.00,
+    "transactionType": "IMPULSE",
+    "transactionCategory": "OTHER"
+  }
+]
