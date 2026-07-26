@@ -3,6 +3,7 @@ package com.zenith.zenith_app.constellation;
 import com.zenith.zenith_app.star.Star;
 import com.zenith.zenith_app.user.User;
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -37,4 +38,9 @@ public class Constellation {
   private boolean isXpAwarded = false;
 
   private ConstellationStatus status = ConstellationStatus.IN_PROGRESS;
+
+  @Column(updatable = false)
+  private LocalDateTime createdAt;
+
+  private LocalDateTime lastUpdated;
 }

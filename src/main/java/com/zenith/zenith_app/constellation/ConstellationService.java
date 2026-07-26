@@ -4,6 +4,7 @@ import com.zenith.zenith_app.config.SecureEntity;
 import com.zenith.zenith_app.config.XPService;
 import com.zenith.zenith_app.star.StarStatus;
 import com.zenith.zenith_app.user.UserRepository;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,8 @@ public class ConstellationService {
         Constellation.builder()
             .missionName(request.missionName())
             .objective(request.objective())
+            .createdAt(LocalDateTime.now())
+            .lastUpdated(LocalDateTime.now())
             .user(
                 userRepository
                     .findByUsername(username)
@@ -66,6 +69,7 @@ public class ConstellationService {
       xpService.awardConstellationXP(constellation);
     }
 
+    constellation.setLastUpdated(LocalDateTime.now());
     return ConstellationDTO.fromConstellation(constellationRepository.save(constellation));
   }
 
